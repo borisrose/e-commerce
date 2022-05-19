@@ -5,7 +5,9 @@ let totalPrice = 0;
 
 
 
-async function fetchProduct(id, img, title, price, total){
+
+
+async function fetchProduct(id, img, title, price){
 
     
     let response = await fetch('http://localhost:3000/api/products/'+ id);
@@ -26,6 +28,11 @@ async function fetchProduct(id, img, title, price, total){
 }
 
 
+
+
+
+
+
 async function getCart() {
 
 
@@ -36,7 +43,8 @@ async function getCart() {
     let localStorageCartJS = JSON.parse(localStorageCart);
     for(productCart of localStorageCartJS){
     
-        console.log(productCart.id);
+        
+        
         let cartItemsArticle = document.createElement('article');
         cartItemsArticle.classList.add("cart__item");
         cartItemsArticle.setAttribute("data-id",productCart.id);
@@ -83,6 +91,10 @@ async function getCart() {
         quantityInput.setAttribute("min",0);
         quantityInput.setAttribute("max",100);
         quantityInput.setAttribute("value", productCart.quantity);
+
+      
+        
+
         cartItemContentSettingsQuantity.appendChild(quantityInput);
         let cartItemContentSettingsDelete = document.createElement("div");
         cartItemContentSettingsDelete.classList.add("cart__item__content__settings__delete");
@@ -91,22 +103,124 @@ async function getCart() {
         deleteItemParagraph.classList.add("deleteItem");
         deleteItemParagraph.textContent = "Supprimer";
         cartItemContentSettingsDelete.appendChild(deleteItemParagraph);
+
+        function deleteCartProduct(){
+            for(let i = 0; i< localStorageCartJS.length; i++){
+                
+                if(localStorageCartJS[i] == productCart){
+                    deleteItemParagraph.onclick = () => {
+
+                        let exQuantity = localStorageCartJS[i].quantity;
+                        
+                        async function getNewTotalAfterDeletion(){
+                            let response = await fetch('http://localhost:3000/api/products/'+ localStorageCartJS[i].id);
+                            let productJSON = await response.json();
+                            let product = JSON.parse(JSON.stringify(productJSON));
+                            let priceInt = product['price'];
+                            let exQuantityInt = new Number(exQuantity);
+                            //delete ex quantity
+                            totalPrice -= (priceInt * exQuantityInt);
+                            totalQuantity -= exQuantityInt;
+                           
+                            
+                            //display on screen
+                            let spanTotalQuantity = document.getElementById("totalQuantity");
+                            spanTotalQuantity.textContent = new String(totalQuantity);
+                            let spanTotalPrice = document.getElementById("totalPrice");
+                            spanTotalPrice.textContent = new String(totalPrice);
+
+                        }
+                        getNewTotalAfterDeletion();
+                        localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
+                        cartJSON = JSON.stringify(localStorageCartJS);
+                        localStorage.setItem("cart",cartJSON);
+                        console.log(localStorage.getItem("cart"));
+                        article = deleteItemParagraph.closest('article');
+                        section = deleteItemParagraph.closest('section');
+                        section.removeChild(article);
+                    }
+                    break;
+                }
+            }
+        }
+        deleteCartProduct();
     
-    
-       let priceInt = await fetchProduct(productId, itemImg, descriptionTitleHeader, descriptionPriceParagraph, totalPrice);
-       let quantityInt = new Number(productCart.quantity);
-       totalPrice += priceInt * quantityInt;
-       totalQuantity += quantityInt;
-    
-    
+      
+
+        //when quantity is modified on the cart.html page 
+        function modifyCart(){
+
+            
+            
+             
+            for(let i = 0; i< localStorageCartJS.length; i++){
+                
+                if(localStorageCartJS[i] == productCart){
+                    quantityInput.onchange = (e) => {
+                        changedProductId = localStorageCartJS[i].id;
+                        console.log(changedProductId);
+                        let exQuantity = localStorageCartJS[i].quantity;
+                        let newProductQuantity = e.target.value;
+                        localStorageCartJS[i].quantity = newProductQuantity;
+                        //console.log(localStorageCartJS[i]);
+                        
+                        cartJSON = JSON.stringify(localStorageCartJS);
+                        localStorage.setItem("cart",cartJSON);
+                       
+                        
+                        async function getNewTotalAfterChange(){
+                            let response = await fetch('http://localhost:3000/api/products/'+ changedProductId);
+                            let productJSON = await response.json();
+                            let product = JSON.parse(JSON.stringify(productJSON));
+                            let priceInt = product['price'];
+                            let exQuantityInt = new Number(exQuantity);
+                            //delete ex quantity
+                            totalPrice -= (priceInt * exQuantityInt);
+                            totalQuantity -= exQuantityInt;
+                            //new quantity add
+                            let quantityInt = new Number(newProductQuantity);
+                            totalPrice += (priceInt * quantityInt);
+                            totalQuantity += quantityInt;
+                            //console.log(typeof priceInt);
+                            
+
+
+
+                            //display on screen
+                            let spanTotalQuantity = document.getElementById("totalQuantity");
+                            spanTotalQuantity.textContent = new String(totalQuantity);
+                            let spanTotalPrice = document.getElementById("totalPrice");
+                            spanTotalPrice.textContent = new String(totalPrice);
+
+                        }
+                        getNewTotalAfterChange();
+                    };
+                   
+                   break;
+                }
+               
+            }
+            
+            
+           
+            
+        }
+        modifyCart();
+        //end
+
+
+        let priceInt = await fetchProduct(productId, itemImg, descriptionTitleHeader, descriptionPriceParagraph);
+        let quantityInt = new Number(productCart.quantity);
+        totalPrice += (priceInt * quantityInt);
+        totalQuantity += quantityInt;
+     
     
     }
     
-    console.log(totalPrice);
-    console.log(totalQuantity);
-    spanTotalQuantity = document.getElementById("totalQuantity");
+    
+    let spanTotalQuantity = document.getElementById("totalQuantity");
     spanTotalQuantity.textContent = new String(totalQuantity);
-    spanTotalPrice = document.getElementById("totalPrice");
+    let spanTotalPrice = document.getElementById("totalPrice");
     spanTotalPrice.textContent = new String(totalPrice);
     
     
@@ -118,3 +232,180 @@ async function getCart() {
 
 getCart();
 
+
+
+function checkFormData() {
+
+    let errorArray = [
+
+        'firstNameErrorMsg',
+        'lastNameErrorMsg',
+        'addressErrorMsg',
+        'cityErrorMsg',
+        'emailErrorMsg',
+        
+    ]
+
+    let inputArray = [
+
+        'firstName',
+        'lastName',
+        'address',
+        'city',
+        'email',
+    ]
+
+
+    
+ 
+    function checkName(index,array){
+
+        
+        let name = document.getElementById(array[index]);
+    
+
+        name.addEventListener('change', (e)=> {
+    
+            if(/^([a-z-]){1,20}$/gi.test(e.target.value)){
+                
+                if(index == 0){
+                    contact.firstname = e.target.value;
+                    let errorParagraph = document.getElementById(errorArray[index]);
+                    errorParagraph.textContent = null;
+                }
+                else {
+                    contact.lastname = e.target.value;
+                    let errorParagraph = document.getElementById(errorArray[index]);
+                    errorParagraph.textContent = null;
+                }
+            }
+            else {
+                let errorParagraph = document.getElementById(errorArray[index]);
+                if(index == 0){
+                    errorParagraph.textContent = "Prénom incompréhensible";
+                }
+                else {
+                    errorParagraph.textContent = "Nom incompréhensible";
+                }
+            }
+        });
+    
+
+    }
+    
+    function checkAddress(index, array) {
+
+        let address = document.getElementById(array[index]);
+
+        address.addEventListener('change', (e)=> {
+            let errorParagraph = document.getElementById(errorArray[index]);
+            if(/^([0-9]{1,3})([\s]{1})+([a-zA-Z]{1,10})([\s]{1})+([a-zA-Z-\s]{1,30})$/g.test(e.target.value)){
+
+                contact.address = e.target.value;
+                
+                errorParagraph.textContent = null;
+            }
+            else {
+                errorParagraph.textContent = "Adresse incompréhensible";
+            }
+        });
+    } 
+
+    function checkCity(index, array) {
+
+        let city = document.getElementById(array[index]);
+
+        city.addEventListener('change', (e)=> {
+
+            let errorParagraph = document.getElementById(errorArray[index]);
+            if(/^([a-z]{1,15})((([\s]{1}?)(([a-z]{1,15})?)?)?)$/gi.test(e.target.value)){
+
+                contact.city = e.target.value;
+                
+                errorParagraph.textContent = null;
+            }
+            else {
+                errorParagraph.textContent = "Ville incompréhensible";
+            }
+
+        });
+
+    }
+
+    function checkEmail(index, array) {
+
+        let email = document.getElementById(array[index]);
+        email.addEventListener('change', (e)=> {
+
+            let errorParagraph = document.getElementById(errorArray[index]);
+            if(/^([a-z]+)@([a-z]{1,6}\.[a-z]{1,3})$/gi.test(e.target.value)){
+
+                contact.email = e.target.value;
+                
+                errorParagraph.textContent = null;
+            }
+            else {
+                errorParagraph.textContent = "Email incompréhensible";
+            }
+
+        });
+    }
+
+
+    for(let i = 0; i <2; i++){
+        checkName(i, inputArray);
+    }
+    
+    checkAddress(2, inputArray);
+    checkCity(3, inputArray);
+    checkEmail(4,inputArray);
+
+ 
+}
+checkFormData();
+
+
+async function makeCartProductsArray(){
+
+    let cartProductsArray = [];
+
+    let localStorageCart = localStorage.getItem('cart');
+    let localStorageCartJS = JSON.parse(localStorageCart);
+    for(let i = 0; i < localStorageCartJS.length; i++){
+
+        let response = await fetch('http://localhost:3000/api/products/'+ localStorageCartJS[i].id);
+        let productJSON = await response.json();
+        let product = JSON.parse(JSON.stringify(productJSON));
+        let priceInt = product['price'];
+        let quantityInt = new Number(localStorageCartJS[i].quantity);
+
+        let productObject = {
+
+            id: localStorageCartJS[i].id,
+            quantity: localStorageCartJS[i].quantity,
+            color: localStorageCartJS[i].color,
+            price: quantityInt * priceInt,
+
+        } 
+        cartProductsArray.push(localStorageCartJS[i].id);
+        console.log(productObject);
+        console.log(cartProductsArray);
+
+    }
+    
+    return Promise.resolve(cartProductsArray);
+
+}
+
+let contact = {
+
+    firstname : "",
+    lastname : "",
+    address : "",
+    city : "",
+    email : "",
+
+}
+console.log(contact);
+
+let carProductsArray = makeCartProductsArray();
