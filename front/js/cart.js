@@ -269,12 +269,12 @@ function checkFormData() {
             if(/^([a-z-]){1,20}$/gi.test(e.target.value)){
                 
                 if(index == 0){
-                    contact.firstname = e.target.value;
+                    contactObject.firstname = e.target.value;
                     let errorParagraph = document.getElementById(errorArray[index]);
                     errorParagraph.textContent = null;
                 }
                 else {
-                    contact.lastname = e.target.value;
+                    contactObject.lastname = e.target.value;
                     let errorParagraph = document.getElementById(errorArray[index]);
                     errorParagraph.textContent = null;
                 }
@@ -301,7 +301,7 @@ function checkFormData() {
             let errorParagraph = document.getElementById(errorArray[index]);
             if(/^([0-9]{1,3})([\s]{1})+([a-zA-Z]{1,10})([\s]{1})+([a-zA-Z-\s]{1,30})$/g.test(e.target.value)){
 
-                contact.address = e.target.value;
+                contactObject.address = e.target.value;
                 
                 errorParagraph.textContent = null;
             }
@@ -320,7 +320,7 @@ function checkFormData() {
             let errorParagraph = document.getElementById(errorArray[index]);
             if(/^([a-z]{1,15})((([\s]{1}?)(([a-z]{1,15})?)?)?)$/gi.test(e.target.value)){
 
-                contact.city = e.target.value;
+                contactObject.city = e.target.value;
                 
                 errorParagraph.textContent = null;
             }
@@ -340,7 +340,7 @@ function checkFormData() {
             let errorParagraph = document.getElementById(errorArray[index]);
             if(/^([a-z]+)@([a-z]{1,6}\.[a-z]{1,3})$/gi.test(e.target.value)){
 
-                contact.email = e.target.value;
+                contactObject.email = e.target.value;
                 
                 errorParagraph.textContent = null;
             }
@@ -397,15 +397,75 @@ async function makeCartProductsArray(){
 
 }
 
-let contact = {
+let contactObject = {
 
-    firstname : "",
-    lastname : "",
+    firstName : "",
+    lastName : "",
     address : "",
     city : "",
     email : "",
 
 }
-console.log(contact);
 
-let carProductsArray = makeCartProductsArray();
+
+let cartProductsArray = makeCartProductsArray();
+
+
+
+/**
+ *
+ * Expects request to contain:
+ * contact: {
+ *   firstName: string,
+ *   lastName: string,
+ *   address: string,
+ *   city: string,
+ *   email: string
+ * }
+ * products: [string] <-- array of product _id
+ *
+ */
+
+async function confirmOrder(){
+
+    let order = document.querySelector('#order');
+    
+    order.onclick = (e) => {
+        e.preventDefault();
+        let orderId;
+        fetch("http://localhost:3000/api/order",{
+
+            method:"POST",
+            headers: {
+                "Accept":"application/json",
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({contact: contactObject, products: cartProductsArray})
+
+
+        })
+        .then((res) => {
+            console.log(res);
+            if(res.ok) {
+                console.log(res.json());
+                return res.json();
+            }
+            
+        })
+        .then((value) => {
+            orderId = value['orderId'];
+            
+        })
+        .catch((err) => {throw err});
+
+        window.open('./confirmation.html/orderId='+orderId);
+
+    }
+
+
+
+
+}
+confirmOrder();
+
+//<a href="./product.html?id=42">

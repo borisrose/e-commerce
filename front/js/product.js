@@ -39,18 +39,22 @@ async function fetchProduct(){
     let productDescription = document.createTextNode(product['description']);
     descriptionParagraph.appendChild(productDescription);
 
-    //dans le select id="colors" ajouter des options avec des value verte et blanche et un TextNode 
+    //dans le select id="colors" ajouter des options 
     let colorsSelect = document.getElementById("colors");
-    let newOptionOne = document.createElement('option');
-    newOptionOne.setAttribute("value","vert");
-    let optionOneText = document.createTextNode("vert");
-    newOptionOne.append(optionOneText);
-    let newOptionTwo = document.createElement('option');
-    newOptionTwo.setAttribute("value","blanc");
-    let optionTwoText = document.createTextNode("blanc");
-    newOptionTwo.append(optionTwoText);
-    colorsSelect.appendChild(newOptionOne);
-    colorsSelect.appendChild(newOptionTwo);
+    console.log(product['colors']);
+
+    for(let i = 0; i< product['colors'].length; i++){
+
+        let newOption = document.createElement('option');
+        newOption.setAttribute("value",product['colors'][i]);
+        let optionText = document.createTextNode(product['colors'][i]);
+        newOption.append(optionText);
+        colorsSelect.appendChild(newOption);
+
+    }
+  
+    
+
     
     let productColor;
     colorsSelect.onchange = (e) => {
