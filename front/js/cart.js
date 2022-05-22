@@ -266,15 +266,15 @@ function checkFormData() {
 
         name.addEventListener('change', (e)=> {
     
-            if(/^([a-z-]){1,20}$/gi.test(e.target.value)){
+            if(/^([a-z\s-]){1,20}$/gi.test(e.target.value)){
                 
                 if(index == 0){
-                    contactObject.firstname = e.target.value;
+                    contactObject.firstName = e.target.value;
                     let errorParagraph = document.getElementById(errorArray[index]);
                     errorParagraph.textContent = null;
                 }
                 else {
-                    contactObject.lastname = e.target.value;
+                    contactObject.lastName = e.target.value;
                     let errorParagraph = document.getElementById(errorArray[index]);
                     errorParagraph.textContent = null;
                 }
@@ -299,7 +299,7 @@ function checkFormData() {
 
         address.addEventListener('change', (e)=> {
             let errorParagraph = document.getElementById(errorArray[index]);
-            if(/^([0-9]{1,3})([\s]{1})+([a-zA-Z]{1,10})([\s]{1})+([a-zA-Z-\s]{1,30})$/g.test(e.target.value)){
+            if(/^([0-9]{1,4})([\s]{1})([a-zA-Z]{1,10})([\s]{1})+([a-zA-Z-\s]{1,30})$/g.test(e.target.value)){
 
                 contactObject.address = e.target.value;
                 
@@ -318,7 +318,7 @@ function checkFormData() {
         city.addEventListener('change', (e)=> {
 
             let errorParagraph = document.getElementById(errorArray[index]);
-            if(/^([a-z]{1,15})((([\s]{1}?)(([a-z]{1,15})?)?)?)$/gi.test(e.target.value)){
+            if(/^([a-z-\s]{1,45})$/gi.test(e.target.value)){
 
                 contactObject.city = e.target.value;
                 
@@ -338,7 +338,7 @@ function checkFormData() {
         email.addEventListener('change', (e)=> {
 
             let errorParagraph = document.getElementById(errorArray[index]);
-            if(/^([a-z]+)@([a-z]{1,6}\.[a-z]{1,3})$/gi.test(e.target.value)){
+            if(/^([a-z0_9\.-]+)@([a-z]{1,10}\.[a-z]{1,3})$/gi.test(e.target.value)){
 
                 contactObject.email = e.target.value;
                 
@@ -376,20 +376,11 @@ async function makeCartProductsArray(){
         let response = await fetch('http://localhost:3000/api/products/'+ localStorageCartJS[i].id);
         let productJSON = await response.json();
         let product = JSON.parse(JSON.stringify(productJSON));
-        let priceInt = product['price'];
-        let quantityInt = new Number(localStorageCartJS[i].quantity);
+       
 
-        let productObject = {
-
-            id: localStorageCartJS[i].id,
-            quantity: localStorageCartJS[i].quantity,
-            color: localStorageCartJS[i].color,
-            price: quantityInt * priceInt,
-
-        } 
+      
         cartProductsArray.push(localStorageCartJS[i].id);
-        console.log(productObject);
-        console.log(cartProductsArray);
+       
 
     }
     
@@ -408,7 +399,7 @@ let contactObject = {
 }
 
 
-let cartProductsArray = makeCartProductsArray();
+
 
 
 
@@ -429,11 +420,12 @@ let cartProductsArray = makeCartProductsArray();
 async function confirmOrder(){
 
     let order = document.querySelector('#order');
+    let cartProductsArray = await makeCartProductsArray();
     
     order.onclick = (e) => {
         e.preventDefault();
         let orderId;
-        fetch("http://localhost:3000/api/order",{
+        fetch("http://localhost:3000/api/products/order",{
 
             method:"POST",
             headers: {
@@ -447,18 +439,19 @@ async function confirmOrder(){
         .then((res) => {
             console.log(res);
             if(res.ok) {
-                console.log(res.json());
+                
                 return res.json();
             }
             
         })
         .then((value) => {
             orderId = value['orderId'];
+            window.location = './confirmation.html?orderId='+orderId;
             
         })
         .catch((err) => {throw err});
 
-        window.open('./confirmation.html/orderId='+orderId);
+       
 
     }
 

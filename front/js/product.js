@@ -11,7 +11,7 @@ async function fetchProduct(){
     if (search_params.has("id")){
         
         productId = url.searchParams.get("id");
-        console.log(productId);
+      
     }
 
 
@@ -41,7 +41,7 @@ async function fetchProduct(){
 
     //dans le select id="colors" ajouter des options 
     let colorsSelect = document.getElementById("colors");
-    console.log(product['colors']);
+  
 
     for(let i = 0; i< product['colors'].length; i++){
 
@@ -60,7 +60,7 @@ async function fetchProduct(){
     colorsSelect.onchange = (e) => {
 
         productColor = e.target.value;
-        console.log(productColor);    
+        
         
 
     };
@@ -92,18 +92,17 @@ async function fetchProduct(){
             cart.push(cartProductJson);
             cartJSON = JSON.stringify(cart);
             localStorage.setItem("cart",cartJSON);
-            console.log(localStorage.getItem("cart"));
-            console.log("Dans le bloc 0");
+           
         }
-
-        //on imagine un panier non vide
-        if(localStorage.length > 0){
+        else if(localStorage.length > 0){
             let cartJSON = localStorage.getItem("cart");
             let cartJS = JSON.parse(cartJSON);
-            console.log(cartJS);
+            console.log(cartJS, "si panier non vide");
             let isSameExactProductInCart = false;
             let isSameProductWithDifferentColorInCart = false;
-            
+            let SameProductWithDifferentColorInCartArray = [];
+            let indexSameProductWithDifferentColorInCartArray = [];
+
             // si i n'est pas supérieure au nombre d'items dans le panier
             let i = 0;
             while(i< cartJS.length){
@@ -112,20 +111,26 @@ async function fetchProduct(){
                 //si l'item du panier a le même id et la même couleur que le potentiel item : on change la quantité de l'item du panier
                 if(cartJS[i].id == productId && cartJS[i].color == productColor ){
 
-                    console.log("Dans le bloc 1");
+                    
                     cartJS[i].quantity = productQuantity;
                     let cartJSON = JSON.stringify(cartJS);
                     localStorage.setItem("cart",cartJSON);
-                    console.log(localStorage.getItem("cart"));
+                   
                     isSameExactProductInCart = true;
                     break;
                     
                 }
                 else if(cartJS[i].id == productId && cartJS[i].color !== productColor){
                         // si le produit existe mais d'une couleur différente on le signale 
-                        console.log(`${i} + ${cartJS[i].id} + ${productId} + ${cartJS[i].color} + ${productColor}`);
-                        isSameProductWithDifferentColorInCart = true;
-                        console.log("Dans le bloc 2");
+                   
+                        isSameProductWithDifferentColorInCart = true
+                        
+                        //on créé deux tableaux : un qui garde le produit égal mais de couleur différente 
+                        SameProductWithDifferentColorInCartArray.push(cartJS[i]);
+                        //un qui garde son index. 
+                        indexSameProductWithDifferentColorInCartArray.push(i);
+                         
+                        
                         i++;
                       // on avance car on attend de voir si le produit identique n'est pas dans le reste du panier
                 }
@@ -135,17 +140,47 @@ async function fetchProduct(){
                 }
 
             }
-            if(i== cartJS.length && isSameExactProductInCart == false ){
+            
+            if(i== cartJS.length && isSameExactProductInCart == false){
+                
+                if(isSameProductWithDifferentColorInCart ==  true){
+
+                    console.log(SameProductWithDifferentColorInCartArray, "Les produits identitques a coul dif");
+                    console.log(indexSameProductWithDifferentColorInCartArray, "Array des index des futurs sup");
+                    console.log(cartJS, "AVANT TOUT AJOUT OU SUPP");
+
+                    //on supprime tous les  produits identiques et de couleurs différentes du panier
+                    for(let i = 0; i < indexSameProductWithDifferentColorInCartArray.length; i++){
+                        cartJS.splice(indexSameProductWithDifferentColorInCartArray[i],1);
+                        console.log(cartJS,"pendant les splices");
+
+                    }
+
+                    console.log(cartJS, "Après les splice");
                    
-                // si on est à la fin de la boucle et qu'on sait qu'un produit identique n'existe pas dans le panier
-                console.log(cartJS);
-                cartJS.push(cartProductJson);
-                console.log(cartJS);
-                let cartJSON = JSON.stringify(cartJS);
-                localStorage.setItem("cart", cartJSON);
-                console.log(localStorage.getItem("cart"));
-                console.log("Dans le bloc 3");
+                    //on ajoute à la fin du panier tous les produits identiques et de couleurs différents du panier
+                    for(let i = 0;  i< SameProductWithDifferentColorInCartArray.length; i++){
+                        cartJS.push(SameProductWithDifferentColorInCartArray[i]);
+                       
+                    }
+                    console.log(cartJS, "Après les push produits id mais couleur différente");
+                    //on ajoute le nouveau produit identique mais de couleur différente
+                    cartJS.push(cartProductJson);
+                    console.log(cartJS, "Après l'ajout du cartProductJson");
+                    cartJSON = JSON.stringify(cartJS);
+                    localStorage.setItem("cart", cartJSON);
+
+                }else {
+                    cartJS.push(cartProductJson);
+                    let cartJSON = JSON.stringify(cartJS);
+                    localStorage.setItem("cart", cartJSON);
+                    
+                    
+                }
+                
+
             }
+              
 
 
         }
