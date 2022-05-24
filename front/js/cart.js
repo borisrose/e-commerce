@@ -161,8 +161,16 @@ async function getCart() {
                         console.log(changedProductId);
                         let exQuantity = localStorageCartJS[i].quantity;
                         let newProductQuantity = e.target.value;
-                        localStorageCartJS[i].quantity = newProductQuantity;
-                        //console.log(localStorageCartJS[i]);
+
+                        if(newProductQuantity == 0){
+                            localStorageCartJS[i].quantity = newProductQuantity;
+                            localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
+                        }
+                        else{
+                            localStorageCartJS[i].quantity = newProductQuantity;
+                            //console.log(localStorageCartJS[i]);
+                        }
+                       
                         
                         cartJSON = JSON.stringify(localStorageCartJS);
                         localStorage.setItem("cart",cartJSON);
@@ -401,21 +409,6 @@ let contactObject = {
 
 
 
-
-
-/**
- *
- * Expects request to contain:
- * contact: {
- *   firstName: string,
- *   lastName: string,
- *   address: string,
- *   city: string,
- *   email: string
- * }
- * products: [string] <-- array of product _id
- *
- */
 
 async function confirmOrder(){
 

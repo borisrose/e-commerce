@@ -87,14 +87,14 @@ async function fetchProduct(){
         } 
 
         // on imagine un panier vide 
-        if(localStorage.length == 0){
+        if(localStorage.length == 0 && cartProductJson.quantity > 0 && cartProductJson.color){
             cart = []
             cart.push(cartProductJson);
             cartJSON = JSON.stringify(cart);
             localStorage.setItem("cart",cartJSON);
            
         }
-        else if(localStorage.length > 0){
+        else if(localStorage.length > 0 && cartProductJson.quantity > 0 && cartProductJson.color ){
             let cartJSON = localStorage.getItem("cart");
             let cartJS = JSON.parse(cartJSON);
             console.log(cartJS, "si panier non vide");
