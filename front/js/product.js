@@ -34,6 +34,11 @@ async function fetchProduct(){
     let productTitle = document.createTextNode(product['name']);
     title.appendChild(productTitle);
 
+    //ajouter un TextNode pour le span avec id="price"
+    let price = document.getElementById('price');
+    let productPrice = document.createTextNode(product.price);
+    price.append(productPrice);
+
     //ajouter un TextNode pour le p avec id="description"
     let descriptionParagraph = document.getElementById("description");
     let productDescription = document.createTextNode(product['description']);
@@ -80,122 +85,61 @@ async function fetchProduct(){
     let addToCartButton = document.getElementById("addToCart");
     addToCartButton.onclick = () => {
 
+       
+     
+        
         let cartProductJson = {
             id : productId,
             quantity : productQuantity,
             color : productColor
         } 
 
+
+
+        if(cartProductJson.color === "" || cartProductJson.quantity <= 0 || cartProductJson.quantity > 100) {
+            return;
+        }
         // on imagine un panier vide 
-        if(localStorage.length == 0 && cartProductJson.quantity > 0 && cartProductJson.color){
-            cart = []
+       let cartJSON = localStorage.getItem("cart");
+        if(cartJSON === null){
+
+            cart = [];
             cart.push(cartProductJson);
             cartJSON = JSON.stringify(cart);
             localStorage.setItem("cart",cartJSON);
            
         }
-        else if(localStorage.length > 0 && cartProductJson.quantity > 0 && cartProductJson.color ){
-            let cartJSON = localStorage.getItem("cart");
-            let cartJS = JSON.parse(cartJSON);
-            console.log(cartJS, "si panier non vide");
-            let isSameExactProductInCart = false;
-            let isSameProductWithDifferentColorInCart = false;
-            let SameProductWithDifferentColorInCartArray = [];
-            let indexSameProductWithDifferentColorInCartArray = [];
-
-            // si i n'est pas supérieure au nombre d'items dans le panier
-            let i = 0;
-            while(i< cartJS.length){
-                console.log(localStorage.length);
-                
-                //si l'item du panier a le même id et la même couleur que le potentiel item : on change la quantité de l'item du panier
-                if(cartJS[i].id == productId && cartJS[i].color == productColor ){
-
-                    
-                    cartJS[i].quantity = productQuantity;
-                    let cartJSON = JSON.stringify(cartJS);
-                    localStorage.setItem("cart",cartJSON);
-                   
-                    isSameExactProductInCart = true;
-                    break;
-                    
-                }
-                else if(cartJS[i].id == productId && cartJS[i].color !== productColor){
-                        // si le produit existe mais d'une couleur différente on le signale 
-                   
-                        isSameProductWithDifferentColorInCart = true
-                        
-                        //on créé deux tableaux : un qui garde le produit égal mais de couleur différente 
-                        SameProductWithDifferentColorInCartArray.push(cartJS[i]);
-                        //un qui garde son index. 
-                        indexSameProductWithDifferentColorInCartArray.push(i);
-                         
-                        
-                        i++;
-                      // on avance car on attend de voir si le produit identique n'est pas dans le reste du panier
-                }
-                else{
-                    i++;
-                    // si le produit n'est pas identique on avance pour voir s'il n'est pas dans le reste du panier 
-                }
-
-            }
-            
-            if(i== cartJS.length && isSameExactProductInCart == false){
-                
-                if(isSameProductWithDifferentColorInCart ==  true){
-
-                    console.log(SameProductWithDifferentColorInCartArray, "Les produits identitques a coul dif");
-                    console.log(indexSameProductWithDifferentColorInCartArray, "Array des index des futurs sup");
-                    console.log(cartJS, "AVANT TOUT AJOUT OU SUPP");
-
-                    //on supprime tous les  produits identiques et de couleurs différentes du panier
-                    for(let i = 0; i < indexSameProductWithDifferentColorInCartArray.length; i++){
-                        cartJS.splice(indexSameProductWithDifferentColorInCartArray[i],1);
-                        console.log(cartJS,"pendant les splices");
-
-                    }
-
-                    console.log(cartJS, "Après les splice");
-                   
-                    //on ajoute à la fin du panier tous les produits identiques et de couleurs différents du panier
-                    for(let i = 0;  i< SameProductWithDifferentColorInCartArray.length; i++){
-                        cartJS.push(SameProductWithDifferentColorInCartArray[i]);
-                       
-                    }
-                    console.log(cartJS, "Après les push produits id mais couleur différente");
-                    //on ajoute le nouveau produit identique mais de couleur différente
-                    cartJS.push(cartProductJson);
-                    console.log(cartJS, "Après l'ajout du cartProductJson");
-                    cartJSON = JSON.stringify(cartJS);
-                    localStorage.setItem("cart", cartJSON);
-
-                }else {
-                    cartJS.push(cartProductJson);
-                    let cartJSON = JSON.stringify(cartJS);
-                    localStorage.setItem("cart", cartJSON);
-                    
-                    
-                }
-                
-
-            }
-              
-
-
-        }
-
         
+        let cartJS = JSON.parse(cartJSON);
 
-      
-    
+        // si i n'est pas supérieure au nombre d'items dans le panier
+        let i = 0;
+        while(i< cartJS.length){
+            console.log(localStorage.length);
+                
+            //si l'item du panier a le même id et la même couleur que le potentiel item : on change la quantité de l'item du panier
+            if(cartJS[i].id == productId && cartJS[i].color == productColor ){
+
+                    
+                cartJS[i].quantity = productQuantity;
+                let cartJSON = JSON.stringify(cartJS);
+                localStorage.setItem("cart",cartJSON);    
+                return;
+                    
+            }
+        i++;
+        }
+            
+        cartJS.push(cartProductJson);
+        cartJS.sort((canape1, canape2) => {
+            return ('' + canape1.id).localeCompare(canape2.id);
+        });
+        cartJSON = JSON.stringify(cartJS);
+        localStorage.setItem("cart", cartJSON);
 
     };
 
-
-
 }
-
 fetchProduct();
 
 

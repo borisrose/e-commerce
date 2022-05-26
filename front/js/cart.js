@@ -41,14 +41,16 @@ async function getCart() {
 
     let localStorageCart = localStorage.getItem('cart');
     let localStorageCartJS = JSON.parse(localStorageCart);
-    for(productCart of localStorageCartJS){
+    
+    
+    for(let i = 0; i <localStorageCartJS.length; i++){
     
         
         
         let cartItemsArticle = document.createElement('article');
         cartItemsArticle.classList.add("cart__item");
-        cartItemsArticle.setAttribute("data-id",productCart.id);
-        cartItemsArticle.setAttribute("data-color", productCart.color);
+        cartItemsArticle.setAttribute("data-id",localStorageCartJS[i].id);
+        cartItemsArticle.setAttribute("data-color", localStorageCartJS[i].color);
         cartItemsSection.appendChild(cartItemsArticle);
     
         let cartItemImgDiv = document.createElement('div');
@@ -56,7 +58,7 @@ async function getCart() {
         cartItemsArticle.appendChild(cartItemImgDiv);
         let itemImg = document.createElement("img");
         cartItemImgDiv.appendChild(itemImg);
-        let productId = productCart.id;
+        let productId = localStorageCartJS[i].id;
      
         
     
@@ -69,7 +71,7 @@ async function getCart() {
         let descriptionTitleHeader = document.createElement('h2');
         cartItemContentDescriptionDiv.appendChild(descriptionTitleHeader);
         let descriptionColorParagraph = document.createElement('p');
-        descriptionColorParagraph.textContent = productCart.color;
+        descriptionColorParagraph.textContent = localStorageCartJS[i].color;
         cartItemContentDescriptionDiv.appendChild(descriptionColorParagraph);
         let descriptionPriceParagraph = document.createElement('p');
         cartItemContentDescriptionDiv.appendChild(descriptionPriceParagraph);
@@ -90,10 +92,8 @@ async function getCart() {
         quantityInput.setAttribute("name","itemQuantity");
         quantityInput.setAttribute("min",0);
         quantityInput.setAttribute("max",100);
-        quantityInput.setAttribute("value", productCart.quantity);
+        quantityInput.setAttribute("value", localStorageCartJS[i].quantity);
 
-      
-        
 
         cartItemContentSettingsQuantity.appendChild(quantityInput);
         let cartItemContentSettingsDelete = document.createElement("div");
@@ -104,121 +104,115 @@ async function getCart() {
         deleteItemParagraph.textContent = "Supprimer";
         cartItemContentSettingsDelete.appendChild(deleteItemParagraph);
 
-        function deleteCartProduct(){
-            for(let i = 0; i< localStorageCartJS.length; i++){
-                
-                if(localStorageCartJS[i] == productCart){
-                    deleteItemParagraph.onclick = () => {
-
-                        let exQuantity = localStorageCartJS[i].quantity;
-                        
-                        async function getNewTotalAfterDeletion(){
-                            let response = await fetch('http://localhost:3000/api/products/'+ localStorageCartJS[i].id);
-                            let productJSON = await response.json();
-                            let product = JSON.parse(JSON.stringify(productJSON));
-                            let priceInt = product['price'];
-                            let exQuantityInt = new Number(exQuantity);
-                            //delete ex quantity
-                            totalPrice -= (priceInt * exQuantityInt);
-                            totalQuantity -= exQuantityInt;
-                           
-                            
-                            //display on screen
-                            let spanTotalQuantity = document.getElementById("totalQuantity");
-                            spanTotalQuantity.textContent = new String(totalQuantity);
-                            let spanTotalPrice = document.getElementById("totalPrice");
-                            spanTotalPrice.textContent = new String(totalPrice);
-
-                        }
-                        getNewTotalAfterDeletion();
-                        localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
-                        cartJSON = JSON.stringify(localStorageCartJS);
-                        localStorage.setItem("cart",cartJSON);
-                        console.log(localStorage.getItem("cart"));
-                        article = deleteItemParagraph.closest('article');
-                        section = deleteItemParagraph.closest('section');
-                        section.removeChild(article);
-                    }
-                    break;
+        function deleteCartProduct(){   
+            deleteItemParagraph.onclick = () => {
+                console.log(localStorageCartJS);
+                console.log(localStorageCartJS[i]);
+                // the ex-quantity is stocked into a variable called exQuantity for changing the total amount down below
+                let exQuantity = localStorageCartJS[i].quantity;
+                let id = localStorageCartJS[i].id
+                //the LSCJS Array's element is removed from it 
+                localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);   
+                // the section and the article corresponding to the element's display are removed
+                article = deleteItemParagraph.closest('article');
+                section = deleteItemParagraph.closest('section');
+                section.removeChild(article);
+                 // the new LSCJS Array is turned into a JSON type
+                cartJSON = JSON.stringify(localStorageCartJS);
+                 // the new JSON type is the new "cart" representing the localStorage
+                localStorage.setItem("cart",cartJSON);  
+                async function getNewTotalAfterDeletion(){
+                    let response = await fetch('http://localhost:3000/api/products/'+ id);
+                    let productJSON = await response.json();
+                    let product = JSON.parse(JSON.stringify(productJSON));
+                    let priceInt = product['price'];
+                    let exQuantityInt = new Number(exQuantity);
+                    //delete ex quantity
+                    totalPrice -= (priceInt * exQuantityInt);
+                    totalQuantity -= exQuantityInt;                     
+                    //display on screen
+                    let spanTotalQuantity = document.getElementById("totalQuantity");
+                    spanTotalQuantity.textContent = new String(totalQuantity);
+                    let spanTotalPrice = document.getElementById("totalPrice");
+                    spanTotalPrice.textContent = new String(totalPrice);  
                 }
+                getNewTotalAfterDeletion();     
             }
         }
         deleteCartProduct();
     
-      
-
+    
         //when quantity is modified on the cart.html page 
         function modifyCart(){
-
-            
-            
-             
-            for(let i = 0; i< localStorageCartJS.length; i++){
                 
-                if(localStorageCartJS[i] == productCart){
-                    quantityInput.onchange = (e) => {
-                        changedProductId = localStorageCartJS[i].id;
-                        console.log(changedProductId);
-                        let exQuantity = localStorageCartJS[i].quantity;
-                        let newProductQuantity = e.target.value;
+            //if the quantity changes 
+            quantityInput.onchange = (e) => {
+                          
+                changedProductId = localStorageCartJS[i].id;
+                    
+                // you stock in a variable the old quantity
+                let exQuantity = localStorageCartJS[i].quantity;
+                // you stock in a variable the new quantity
+                let newProductQuantity = e.target.value;
+                // you transform the string version into a number version
+                let newProductQuantityInt = new Number(newProductQuantity);
+                // you stock as the new element's value the string version of the new quantity
+                localStorageCartJS[i].quantity = newProductQuantity;
 
-                        if(newProductQuantity == 0){
-                            localStorageCartJS[i].quantity = newProductQuantity;
-                            localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
-                        }
-                        else{
-                            localStorageCartJS[i].quantity = newProductQuantity;
-                            //console.log(localStorageCartJS[i]);
-                        }
-                       
-                        
-                        cartJSON = JSON.stringify(localStorageCartJS);
-                        localStorage.setItem("cart",cartJSON);
-                       
-                        
-                        async function getNewTotalAfterChange(){
-                            let response = await fetch('http://localhost:3000/api/products/'+ changedProductId);
-                            let productJSON = await response.json();
-                            let product = JSON.parse(JSON.stringify(productJSON));
-                            let priceInt = product['price'];
-                            let exQuantityInt = new Number(exQuantity);
-                            //delete ex quantity
-                            totalPrice -= (priceInt * exQuantityInt);
-                            totalQuantity -= exQuantityInt;
-                            //new quantity add
-                            let quantityInt = new Number(newProductQuantity);
-                            totalPrice += (priceInt * quantityInt);
-                            totalQuantity += quantityInt;
-                            //console.log(typeof priceInt);
-                            
-
-
-
-                            //display on screen
-                            let spanTotalQuantity = document.getElementById("totalQuantity");
-                            spanTotalQuantity.textContent = new String(totalQuantity);
-                            let spanTotalPrice = document.getElementById("totalPrice");
-                            spanTotalPrice.textContent = new String(totalPrice);
-
-                        }
-                        getNewTotalAfterChange();
-                    };
-                   
-                   break;
+                // if the number version of the new  value is higher than 100 or lesser than 0 , end the program
+                if(newProductQuantityInt > 100 || newProductQuantityInt < 0){
+                    return;
                 }
-               
-            }
-            
-            
-           
-            
+                console.log(newProductQuantityInt);
+                // if the number version is identitical to 0 
+                if(newProductQuantityInt === 0){
+                            
+                    localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
+                    console.log(localStorageCartJS);
+                    article = deleteItemParagraph.closest('article');
+                    section = deleteItemParagraph.closest('section');
+                    section.removeChild(article);
+                            
+                }
+                                     
+                cartJSON = JSON.stringify(localStorageCartJS);
+                localStorage.setItem("cart",cartJSON);
+                       
+                        
+                async function getNewTotalAfterChange(){
+
+                    let response = await fetch('http://localhost:3000/api/products/'+ changedProductId);
+                    let productJSON = await response.json();
+                    let product = JSON.parse(JSON.stringify(productJSON));
+                    let priceInt = product['price'];
+                    let exQuantityInt = new Number(exQuantity);
+                    //delete ex quantity
+                    totalPrice -= (priceInt * exQuantityInt);
+                    totalQuantity -= exQuantityInt;
+                    //new quantity add
+                        
+                    totalPrice += (priceInt * quantityInt);
+                    totalQuantity += quantityInt;
+                    //console.log(typeof priceInt);
+                            
+                    //display on screen
+                    let spanTotalQuantity = document.getElementById("totalQuantity");
+                    spanTotalQuantity.textContent = new String(totalQuantity);
+                    let spanTotalPrice = document.getElementById("totalPrice");
+                    spanTotalPrice.textContent = new String(totalPrice);
+
+                }
+                getNewTotalAfterChange();
+            };
+                   
+        
         }
         modifyCart();
         //end
 
 
         let priceInt = await fetchProduct(productId, itemImg, descriptionTitleHeader, descriptionPriceParagraph);
-        let quantityInt = new Number(productCart.quantity);
+        let quantityInt = new Number(localStorageCartJS[i].quantity);
         totalPrice += (priceInt * quantityInt);
         totalQuantity += quantityInt;
      
@@ -231,16 +225,23 @@ async function getCart() {
     let spanTotalPrice = document.getElementById("totalPrice");
     spanTotalPrice.textContent = new String(totalPrice);
     
-    
-
-
-
-
 }
-
 getCart();
 
 
+
+
+//////////////////////////////ABOUT THE FORM ///////////////////////////////////////////////////////////////////////////
+
+let contactObject = {
+
+    firstName : "",
+    lastName : "",
+    address : "",
+    city : "",
+    email : "",
+
+}
 
 function checkFormData() {
 
@@ -373,6 +374,9 @@ function checkFormData() {
 checkFormData();
 
 
+
+//////////////////////////////////////////////////////ABOUT THE CART PRODUCT ARRA//////////////////////////////////////
+
 async function makeCartProductsArray(){
 
     let cartProductsArray = [];
@@ -381,33 +385,18 @@ async function makeCartProductsArray(){
     let localStorageCartJS = JSON.parse(localStorageCart);
     for(let i = 0; i < localStorageCartJS.length; i++){
 
-        let response = await fetch('http://localhost:3000/api/products/'+ localStorageCartJS[i].id);
-        let productJSON = await response.json();
-        let product = JSON.parse(JSON.stringify(productJSON));
-       
-
-      
         cartProductsArray.push(localStorageCartJS[i].id);
        
-
     }
     
     return Promise.resolve(cartProductsArray);
 
 }
 
-let contactObject = {
-
-    firstName : "",
-    lastName : "",
-    address : "",
-    city : "",
-    email : "",
-
-}
 
 
 
+//////////////////////////////////////////////////////ABOUT  THE ORDER CONFIRMATION//////////////////////////////////////
 
 
 async function confirmOrder(){
@@ -454,4 +443,3 @@ async function confirmOrder(){
 }
 confirmOrder();
 
-//<a href="./product.html?id=42">
