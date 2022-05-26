@@ -96,7 +96,7 @@ async function fetchProduct(){
 
 
 
-        if(cartProductJson.color === "" || cartProductJson.quantity <= 0 || cartProductJson.quantity > 100) {
+        if(cartProductJson.color === "" || new Number(cartProductJson.quantity) <= 0 || new Number(cartProductJson.quantity) > 100) {
             return;
         }
         // on imagine un panier vide 
@@ -118,7 +118,7 @@ async function fetchProduct(){
             console.log(localStorage.length);
                 
             //si l'item du panier a le même id et la même couleur que le potentiel item : on change la quantité de l'item du panier
-            if(cartJS[i].id == productId && cartJS[i].color == productColor ){
+            if(cartJS[i].id === productId && cartJS[i].color === productColor ){
 
                     
                 cartJS[i].quantity = productQuantity;

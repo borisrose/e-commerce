@@ -41,8 +41,12 @@ async function getCart() {
 
     let localStorageCart = localStorage.getItem('cart');
     let localStorageCartJS = JSON.parse(localStorageCart);
+    console.log(localStorageCartJS);
     
-    
+    if(localStorageCartJS === null){
+        return;
+    }
+
     for(let i = 0; i <localStorageCartJS.length; i++){
     
         
@@ -106,21 +110,25 @@ async function getCart() {
 
         function deleteCartProduct(){   
             deleteItemParagraph.onclick = () => {
-                console.log(localStorageCartJS);
-                console.log(localStorageCartJS[i]);
+
+                let localStorageCartJSON = localStorage.getItem("cart");
+                let localStorageCartJS = JSON.parse(localStorageCartJSON);
+                
                 // the ex-quantity is stocked into a variable called exQuantity for changing the total amount down below
                 let exQuantity = localStorageCartJS[i].quantity;
                 let id = localStorageCartJS[i].id
                 //the LSCJS Array's element is removed from it 
                 localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);   
-                // the section and the article corresponding to the element's display are removed
+                // the new LSCJS Array is turned into a JSON type
+                cartJSON = JSON.stringify(localStorageCartJS);
+                // the new JSON type is the new "cart" representing the localStorage
+                localStorage.setItem("cart",cartJSON);
                 article = deleteItemParagraph.closest('article');
                 section = deleteItemParagraph.closest('section');
-                section.removeChild(article);
-                 // the new LSCJS Array is turned into a JSON type
-                cartJSON = JSON.stringify(localStorageCartJS);
-                 // the new JSON type is the new "cart" representing the localStorage
-                localStorage.setItem("cart",cartJSON);  
+                section.removeChild(article);  
+                   
+                  
+
                 async function getNewTotalAfterDeletion(){
                     let response = await fetch('http://localhost:3000/api/products/'+ id);
                     let productJSON = await response.json();
@@ -136,7 +144,12 @@ async function getCart() {
                     let spanTotalPrice = document.getElementById("totalPrice");
                     spanTotalPrice.textContent = new String(totalPrice);  
                 }
-                getNewTotalAfterDeletion();     
+                getNewTotalAfterDeletion(); 
+                 // the section and the article corresponding to the element's display are removed
+            
+             
+            
+                   
             }
         }
         deleteCartProduct();
@@ -165,18 +178,21 @@ async function getCart() {
                 }
                 console.log(newProductQuantityInt);
                 // if the number version is identitical to 0 
-                if(newProductQuantityInt === 0){
+                console.log(newProductQuantityInt == 0);
+                if(newProductQuantityInt == 0){
                             
                     localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);
                     console.log(localStorageCartJS);
+                  
                     article = deleteItemParagraph.closest('article');
                     section = deleteItemParagraph.closest('section');
                     section.removeChild(article);
+                    
                             
                 }
-                                     
                 cartJSON = JSON.stringify(localStorageCartJS);
-                localStorage.setItem("cart",cartJSON);
+                localStorage.setItem("cart",cartJSON);             
+                
                        
                         
                 async function getNewTotalAfterChange(){
@@ -191,8 +207,8 @@ async function getCart() {
                     totalQuantity -= exQuantityInt;
                     //new quantity add
                         
-                    totalPrice += (priceInt * quantityInt);
-                    totalQuantity += quantityInt;
+                    totalPrice += (priceInt * newProductQuantityInt);
+                    totalQuantity += newProductQuantityInt;
                     //console.log(typeof priceInt);
                             
                     //display on screen
@@ -212,9 +228,16 @@ async function getCart() {
 
 
         let priceInt = await fetchProduct(productId, itemImg, descriptionTitleHeader, descriptionPriceParagraph);
-        let quantityInt = new Number(localStorageCartJS[i].quantity);
-        totalPrice += (priceInt * quantityInt);
-        totalQuantity += quantityInt;
+        if(localStorageCartJS == undefined){
+            totalPrice = 0;
+            totalQuantity = 0;
+        }else{
+            let quantityInt = new Number(localStorageCartJS[i].quantity);
+            totalPrice += (priceInt * quantityInt);
+            totalQuantity += quantityInt;
+
+        }
+       
      
     
     }
@@ -383,6 +406,10 @@ async function makeCartProductsArray(){
 
     let localStorageCart = localStorage.getItem('cart');
     let localStorageCartJS = JSON.parse(localStorageCart);
+
+    if(localStorageCartJS === null){
+        return;
+    }
     for(let i = 0; i < localStorageCartJS.length; i++){
 
         cartProductsArray.push(localStorageCartJS[i].id);
