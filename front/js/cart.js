@@ -108,17 +108,20 @@ async function getCart() {
         deleteItemParagraph.textContent = "Supprimer";
         cartItemContentSettingsDelete.appendChild(deleteItemParagraph);
 
-        function deleteCartProduct(){   
-            deleteItemParagraph.onclick = () => {
+        let id = localStorageCartJS[i].id;
+        let color = localStorageCartJS[i].color;
+      
+            deleteItemParagraph.onclick = function () {
 
                 let localStorageCartJSON = localStorage.getItem("cart");
                 let localStorageCartJS = JSON.parse(localStorageCartJSON);
-                
+                let canap = localStorageCartJS.find((c)=> {return c.id === id && c.color === color});
+
                 // the ex-quantity is stocked into a variable called exQuantity for changing the total amount down below
-                let exQuantity = localStorageCartJS[i].quantity;
-                let id = localStorageCartJS[i].id
+                let exQuantity = canap.quantity;
+               
                 //the LSCJS Array's element is removed from it 
-                localStorageCartJS.splice(localStorageCartJS.indexOf(localStorageCartJS[i]),1);   
+                localStorageCartJS.splice(localStorageCartJS.indexOf(canap),1);   
                 // the new LSCJS Array is turned into a JSON type
                 cartJSON = JSON.stringify(localStorageCartJS);
                 // the new JSON type is the new "cart" representing the localStorage
@@ -146,13 +149,9 @@ async function getCart() {
                 }
                 getNewTotalAfterDeletion(); 
                  // the section and the article corresponding to the element's display are removed
-            
-             
-            
-                   
+              
             }
-        }
-        deleteCartProduct();
+     
     
     
         //when quantity is modified on the cart.html page 
