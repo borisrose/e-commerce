@@ -1,7 +1,7 @@
 const pageURL= document.URL;
 
 
-
+// this function is to fetch all information concerning a specific item thanks to its id which is contained in the URL of the page
 async function fetchProduct(){
 
     let url = new URL(pageURL);
@@ -82,6 +82,7 @@ async function fetchProduct(){
     } 
 
     //button id="addToCart"
+    //
     let addToCartButton = document.getElementById("addToCart");
     addToCartButton.onclick = () => {
 
@@ -115,7 +116,7 @@ async function fetchProduct(){
         // si i n'est pas supérieure au nombre d'items dans le panier
         let i = 0;
         while(i< cartJS.length){
-            console.log(localStorage.length);
+            
                 
             //si l'item du panier a le même id et la même couleur que le potentiel item : on change la quantité de l'item du panier
             if(cartJS[i].id === productId && cartJS[i].color === productColor ){

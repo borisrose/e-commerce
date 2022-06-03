@@ -6,7 +6,6 @@ let totalPrice = 0;
 
 
 
-
 async function fetchProduct(id, img, title, price){
 
     
@@ -31,7 +30,7 @@ async function fetchProduct(id, img, title, price){
 
 
 
-
+// function will create the whole display : every item from the localStorage will be display on the cart page, in a certain way
 
 async function getCart() {
 
@@ -111,6 +110,8 @@ async function getCart() {
         let id = localStorageCartJS[i].id;
         let color = localStorageCartJS[i].color;
       
+
+        // that part is to delete an Item from the cart 
             deleteItemParagraph.onclick = function () {
 
                 let localStorageCartJSON = localStorage.getItem("cart");
@@ -131,7 +132,7 @@ async function getCart() {
                 section.removeChild(article);  
                    
                   
-
+                // that function is related to the previous one and will change the total Amount after the deletion of the item
                 async function getNewTotalAfterDeletion(){
                     let response = await fetch('http://localhost:3000/api/products/'+ id);
                     let productJSON = await response.json();
@@ -155,8 +156,7 @@ async function getCart() {
     
     
         //when quantity is modified on the cart.html page 
-        function modifyCart(){
-                
+      
             //if the quantity changes 
             quantityInput.onchange = (e) => {
                           
@@ -191,9 +191,9 @@ async function getCart() {
                 }
                 cartJSON = JSON.stringify(localStorageCartJS);
                 localStorage.setItem("cart",cartJSON);             
-                
+           
                        
-                        
+                //when a change occurs, that function will calculate the new Total Amount     
                 async function getNewTotalAfterChange(){
 
                     let response = await fetch('http://localhost:3000/api/products/'+ changedProductId);
@@ -218,11 +218,11 @@ async function getCart() {
 
                 }
                 getNewTotalAfterChange();
+                
             };
-                   
+            
         
-        }
-        modifyCart();
+     
         //end
 
 
@@ -265,6 +265,7 @@ let contactObject = {
 
 }
 
+// that function is all about checking the data the user puts into the form
 function checkFormData() {
 
     let errorArray = [
@@ -288,7 +289,7 @@ function checkFormData() {
 
 
     
- 
+    // that function checks if the name (first and last one) is written in a good way.
     function checkName(index,array){
 
         
@@ -397,16 +398,16 @@ checkFormData();
 
 
 
-//////////////////////////////////////////////////////ABOUT THE CART PRODUCT ARRA//////////////////////////////////////
-
-async function makeCartProductsArray(){
+//////////////////////////////////////////////////////ABOUT THE CART PRODUCT ARRAY//////////////////////////////////////
+// that function create the cartProduct Array to use in the request to the api 
+function makeCartProductsArray(){
 
     let cartProductsArray = [];
 
     let localStorageCart = localStorage.getItem('cart');
     let localStorageCartJS = JSON.parse(localStorageCart);
 
-    if(localStorageCartJS === null){
+    if(localStorageCartJS === null ){
         return;
     }
     for(let i = 0; i < localStorageCartJS.length; i++){
@@ -414,8 +415,9 @@ async function makeCartProductsArray(){
         cartProductsArray.push(localStorageCartJS[i].id);
        
     }
+  
     
-    return Promise.resolve(cartProductsArray);
+    return cartProductsArray;
 
 }
 
@@ -423,49 +425,45 @@ async function makeCartProductsArray(){
 
 
 //////////////////////////////////////////////////////ABOUT  THE ORDER CONFIRMATION//////////////////////////////////////
+let order = document.querySelector('#order'); 
 
-
-async function confirmOrder(){
-
-    let order = document.querySelector('#order');
-    let cartProductsArray = await makeCartProductsArray();
+order.onclick = (e) => {      
+    let cartProductsArray = makeCartProductsArray();
+    if( cartProductsArray.length === 0){
+        
+        return;
+    } 
+    e.preventDefault();
     
-    order.onclick = (e) => {
-        e.preventDefault();
-        let orderId;
-        fetch("http://localhost:3000/api/products/order",{
+    let orderId;
+    fetch("http://localhost:3000/api/products/order",{
 
-            method:"POST",
-            headers: {
-                "Accept":"application/json",
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({contact: contactObject, products: cartProductsArray})
-
-
-        })
-        .then((res) => {
-            console.log(res);
-            if(res.ok) {
+        method:"POST",
+        headers: {
+            "Accept":"application/json",
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({contact: contactObject, products: cartProductsArray})
+    })
+    .then((res) => {
+         
+        if(res.ok) {
                 
-                return res.json();
-            }
+            return res.json();
+        }          
+    })
+    .then((value) => {
+        orderId = value['orderId'];
+        window.location = './confirmation.html?orderId='+orderId;
             
-        })
-        .then((value) => {
-            orderId = value['orderId'];
-            window.location = './confirmation.html?orderId='+orderId;
-            
-        })
-        .catch((err) => {throw err});
-
-       
-
-    }
-
-
-
+    })
+    .catch((err) => {throw err});
 
 }
-confirmOrder();
+
+
+
+
+
+
 
