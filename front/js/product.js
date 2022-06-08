@@ -95,9 +95,10 @@ async function fetchProduct(){
             color : productColor
         } 
 
+        console.log(productColor);
 
-
-        if(cartProductJson.color === "" || new Number(cartProductJson.quantity) <= 0 || new Number(cartProductJson.quantity) > 100) {
+        if(productColor === undefined || new Number(cartProductJson.quantity) <= 0 || new Number(cartProductJson.quantity) > 100) {
+            alert('Vous devez sélectionner une couleur et une quantité entre 1 et 100')
             return;
         }
         // on imagine un panier vide 
@@ -133,10 +134,15 @@ async function fetchProduct(){
             
         cartJS.push(cartProductJson);
         cartJS.sort((canape1, canape2) => {
+           
             return ('' + canape1.id).localeCompare(canape2.id);
         });
         cartJSON = JSON.stringify(cartJS);
         localStorage.setItem("cart", cartJSON);
+        question = confirm('Voulez-vous accéder à votre panier ? ')
+        if(question){
+            window.location = './cart.html'
+        }
 
     };
 
