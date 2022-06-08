@@ -65,7 +65,7 @@ async function fetchProduct(){
     colorsSelect.onchange = (e) => {
 
         productColor = e.target.value;
-        
+        console.log(productColor)
         
 
     };
@@ -95,9 +95,9 @@ async function fetchProduct(){
             color : productColor
         } 
 
-        console.log(productColor);
+        
 
-        if(productColor === undefined || new Number(cartProductJson.quantity) <= 0 || new Number(cartProductJson.quantity) > 100) {
+        if(productColor === "" || productColor === undefined || new Number(cartProductJson.quantity) <= 0 || new Number(cartProductJson.quantity) > 100) {
             alert('Vous devez sélectionner une couleur et une quantité entre 1 et 100')
             return;
         }
